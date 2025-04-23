@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+    --color-bgmain: #9BD2FF;
+    --color-main: #2499EC;
+    --color-card: #E1EFFB;
+    --color-cardHover: #E6F8FF;
+    --color-column: #8CC5F4;
+}
+
+.main-area {
+    min-height: 100vh;
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    min-width: 100%;
+    width: fit-content;
+    padding: 1.25rem;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+
+    > p {
+        text-align: center;
+    }
+}
+
+.columns {
+    display: flex;
+    flex-direction: row;
+    gap: 2.5rem;
+    padding: 1.25rem 0;
+}
+
+.columns_new {
+    width: 400px;
+    min-width: 400px;
+    height: fit-content;
+    padding: 0.75rem 25px;
+    filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    width: 350px;
+    height: 120px;
+    cursor: pointer;
+}
+
+.card-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-description {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.card-label {
+    width: 140px;
+    height: 25px;
+    border-radius: calc(infinity * 1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.column {
+    filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
+    width: 400px;
+    min-width: 400px;
+    height: fit-content;
+    padding: 0.75rem 25px;
+}
+
+.cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem
+}
