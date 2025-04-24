@@ -1,541 +1,620 @@
-# Kanban-доска
+# Мастер-класс "Kanban Board"
 
-Это проект Kanban-доски, созданный с использованием **React**, **Vite** и **TailwindCSS** для мастер-класса по веб-программированию. Приложение позволяет организовывать задачи в колонки, создавать и редактировать карточки задач, присваивать им метки, устанавливать сроки выполнения и фильтровать задачи по меткам. Ниже приведено подробное описание каждого файла проекта, его назначения и функций. Объяснения написаны простым языком, чтобы всё было понятно даже новичкам.
+В этом мастер-классе мы создадим Kanban-доску за 15 минут! Вы научитесь добавлять карточки, колонки, фильтровать задачи по меткам и редактировать их в модальном окне. Каждый этап добавляет новую часть приложения, и вы сразу увидите результат!
 
-## Обзор проекта
+## Этап 1: Создаем основу приложения (App.jsx)
 
-Kanban-доска — это инструмент для визуального управления задачами, похожий на Trello. Доска состоит из колонок (например, «Новые», «В процессе»), в которых находятся карточки задач. Каждая карточка содержит название, описание, метку (например, «Срочная», «Работа»), дату создания и, при необходимости, срок выполнения. Пользователи могут:
-- Создавать и удалять колонки и карточки.
-- Редактировать детали карточек через модальное окно.
-- Фильтровать карточки по меткам.
-- Перемещать карточки между колонками.
+**Что делаем**: Создаем файл `App.jsx` с заголовком и фоном для доски.
 
-Проект использует **React** для создания интерфейса, **Vite** для быстрой разработки и сборки, и **TailwindCSS** для стилизации. Также применяются иконки из библиотеки **Heroicons**.
+**Инструкции**:
+1. Создайте файл `src/App.jsx`.
+2. Скопируйте код ниже.
+3. Откройте приложение в браузере.
 
-## Как запустить проект
+```jsx
+import React from "react";
+import { Squares2X2Icon } from "@heroicons/react/24/solid";
 
-1. **Установите Node.js**
+export default function App() {
+    return (
+        <div className="app bg-[#9BD2FF]">
+            <div className="title">
+                <Squares2X2Icon className="fill-black w-[50px]" />
+                <p className="text-3xl text-black font-bold">Kanban Board</p>
+            </div>
+            <div className="main-area bg-[#2499EC]">
+                <p>Здесь будет наша доска!</p>
+            </div>
+        </div>
+    );
+}
+```
+
+**Результат**: Вы увидите заголовок "Kanban Board" с иконкой на голубом фоне.
+
+---
+
+## Этап 2: Создаем карточку задачи (Card.jsx)
+
+**Что делаем**: Создаем компонент `Card.jsx` для отображения задачи и показываем его в `App.jsx`.
+
+**Инструкции**:
+1. Создайте файл `src/components/Card.jsx`.
+2. Скопируйте код для `Card.jsx`.
+3. Отредактируйте `App.jsx`, чтобы добавить карточку.
+
+**Код для Card.jsx**:
+```jsx
+import React from 'react';
+import clsx from 'clsx';
+
+export default function Card(props) {
+    const labelColor = props.labelList[props.label]?.color || "bg-gray-400";
+    const labelText = props.labelList[props.label]?.title || "Нет метки";
+
+    return (
+        <div className="card bg-[#E1EFFB] hover:bg-[#E6F8FF] hover:scale-105">
+            <div>
+                <div className="card-flex">
+                    <h2 className="text-xl text-black font-semibold">{props.title}</h2>
+                </div>
+                <p className="card-description text-sm text-gray-700">{props.description}</p>
+            </div>
+            <div className="card-flex">
+                <p className="text-xs text-black font-semibold">{new Date(props.createdAt).toLocaleDateString()}</p>
+                <span className={`card-label text-black text-sm font-semibold ${labelColor}`}>{labelText}</span>
+            </div>
+        </div>
+    );
+}
+```
+
+**Изменения в App.jsx**:
+1. В начале файла, после импорта `React`, добавьте импорт `Card`:
+   ```jsx
+   import Card from "./components/Card.jsx";
    ```
-   https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi
+2. Перед `return`, добавьте объект `labelList`:
+   ```jsx
+   const labelList = {
+       urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
+       none: {title: 'Нет метки', color: 'bg-gray-400'}
+   };
+   ```
+3. Внутри `<div className="main-area bg-[#2499EC]">`, замените `<p>Здесь будет наша доска!</p>` на:
+   ```jsx
+   <Card
+       title="Сделать дизайн"
+       description="Нарисовать UI для главной страницы"
+       createdAt="2025-04-17T12:00:00Z"
+       label="urgent"
+       labelList={labelList}
+   />
    ```
 
-2. **Установите зависимости, прописав в консоли, открытой в директории проекта**:
-   ```bash
-   npm install
+**Результат**: В центре появится карточка "Сделать дизайн" с описанием, датой и меткой "Срочная". Наведите на нее — она увеличится!
+
+---
+
+## Этап 3: Создаем колонку (Column.jsx)
+
+**Что делаем**: Создаем компонент `Column.jsx` для группировки карточек и показываем его в `App.jsx`.
+
+**Инструкции**:
+1. Создайте файл `src/components/Column.jsx`.
+2. Скопируйте код для `Column.jsx`.
+3. Отредактируйте `App.jsx`, чтобы показать колонку с карточкой.
+
+**Код для Column.jsx**:
+```jsx
+import React from "react";
+import Card from "./Card";
+
+export default function Column({ id, title, cards, cardProps }) {
+    return (
+        <div className="column bg-[#8CC5F4] p-3 rounded-lg">
+            <h2 className="text-xl font-bold text-black mb-3">{title}</h2>
+            <div className="cards">
+                {cards.map((card, index) => (
+                    <Card
+                        key={index}
+                        cardId={card.cardId}
+                        title={card.title}
+                        description={card.description}
+                        createdAt={card.createdAt}
+                        label={card.label}
+                        {...cardProps}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+```
+
+**Изменения в App.jsx**:
+1. В начале файла, замените импорт `Card` на импорт `Column`:
+   ```jsx
+   import Column from "./components/Column.jsx";
+   ```
+2. Замените `labelList` на следующий код (добавляем массив `cards`):
+   ```jsx
+   const labelList = {
+       urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
+       none: {title: 'Нет метки', color: 'bg-gray-400'}
+   };
+
+   const cards = [
+       {
+           cardId: crypto.randomUUID(),
+           title: "Сделать дизайн",
+           description: "Нарисовать UI для главной страницы",
+           createdAt: "2025-04-17T12:00:00Z",
+           label: "urgent"
+       }
+   ];
+   ```
+3. Внутри `<div className="main-area bg-[#2499EC]">`, замените `<Card ... />` на:
+   ```jsx
+   <Column
+       id="first"
+       title="Новые"
+       cards={cards}
+       cardProps={{ labelList }}
+   />
    ```
 
-3. **Запустите проект**:
-   ```bash
-   npm run dev
+**Результат**: Карточка теперь в колонке "Новые" с заголовком. Это похоже на Kanban-доску!
+
+---
+
+## Этап 4: Объединяем в доску (Board.jsx)
+
+**Что делаем**: Создаем компонент `Board.jsx` для отображения колонок и добавляем его в `App.jsx`.
+
+**Инструкции**:
+1. Создайте файл `src/components/Board.jsx`.
+2. Скопируйте код для `Board.jsx`.
+3. Отредактируйте `App.jsx`, чтобы использовать `Board`.
+
+**Код для Board.jsx**:
+```jsx
+import React from 'react';
+import Column from "./Column.jsx";
+
+export default function Board({ boardProps, columnProps, cardProps, cards }) {
+    return (
+        <div className="columns flex gap-4">
+            {boardProps.columns.map((column, index) => (
+                <Column
+                    key={index}
+                    id={column.id}
+                    title={column.title}
+                    cards={cards.filter((card) => card.column === column.id)}
+                    columnProps={columnProps}
+                    cardProps={cardProps}
+                />
+            ))}
+        </div>
+    );
+}
+```
+
+**Изменения в App.jsx**:
+1. В начале файла, замените импорт `Column` на импорт `Board` и добавьте `useState`:
+   ```jsx
+   import React, { useState } from "react";
+   import { Squares2X2Icon } from "@heroicons/react/24/solid";
+   import Board from "./components/Board.jsx";
+   ```
+2. Замените `labelList` и `cards` на следующий код (добавляем `initialColumns`):
+   ```jsx
+   const labelList = {
+       urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
+       none: {title: 'Нет метки', color: 'bg-gray-400'}
+   };
+
+   const initialColumns = [
+       { id: 'first', title: 'Новые' }
+   ];
+
+   const cards = [
+       {
+           cardId: crypto.randomUUID(),
+           column: 'first',
+           title: "Сделать дизайн",
+           description: "Нарисовать UI для главной страницы",
+           createdAt: "2025-04-17T12:00:00Z",
+           label: "urgent"
+       }
+   ];
+   ```
+3. Внутри `<div className="main-area bg-[#2499EC]">`, замените `<Column ... />` на:
+   ```jsx
+   <Board
+       boardProps={{ columns: initialColumns }}
+       columnProps={{}}
+       cardProps={{ labelList }}
+       cards={cards}
+   />
    ```
 
-4. **Откройте страницу в браузере**
+**Результат**: Колонка "Новые" с карточкой отображается через `Board`. Теперь можно добавить больше колонок!
+
+---
+
+## Этап 5: Добавляем создание колонок и карточек
+
+**Что делаем**: Добавляем возможность создавать колонки и карточки в `App.jsx`, `Column.jsx` и `Board.jsx`.
+
+**Инструкции**:
+1. Отредактируйте `App.jsx`, добавив состояния и функции.
+2. Отредактируйте `Column.jsx`, чтобы поддерживать создание карточек.
+3. Отредактируйте `Board.jsx`, чтобы поддерживать создание колонок.
+
+**Изменения в App.jsx**:
+1. Замените `labelList`, `initialColumns` и `cards` на следующий код (добавляем состояния):
+   ```jsx
+   const labelList = {
+       urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
+       none: {title: 'Нет метки', color: 'bg-gray-400'}
+   };
+
+   const [columns, setColumns] = useState([{ id: 'first', title: 'Новые' }]);
+   const [cards, setCards] = useState([
+       {
+           cardId: crypto.randomUUID(),
+           column: 'first',
+           title: "Сделать дизайн",
+           description: "Нарисовать UI для главной страницы",
+           createdAt: "2025-04-17T12:00:00Z",
+           label: "urgent"
+       }
+   ]);
+   const [isAddingColumn, setIsAddingColumn] = useState(false);
+   const [newColumnTitle, setNewColumnTitle] = useState("");
+   const [isAddingCard, setIsAddingCard] = useState(false);
+   const [newCardTitle, setNewCardTitle] = useState("");
+
+   function createNewColumn() {
+       if (newColumnTitle.trim() === "") {
+           setIsAddingColumn(false);
+           return;
+       }
+       const newColumn = {
+           id: crypto.randomUUID(),
+           title: newColumnTitle.trim(),
+       };
+       setColumns((prev) => [...prev, newColumn]);
+       setNewColumnTitle("");
+       setIsAddingColumn(false);
+   }
+
+   function createNewCard(columnId) {
+       if (newCardTitle.trim() === "") {
+           setIsAddingCard(false);
+           return;
+       }
+       const newCard = {
+           cardId: crypto.randomUUID(),
+           column: columnId,
+           title: newCardTitle,
+           description: "",
+           createdAt: new Date().toISOString(),
+           label: 'none',
+           ending: "",
+       };
+       setCards((prev) => [...prev, newCard]);
+       setNewCardTitle("");
+       setIsAddingCard(false);
+   }
    ```
-   http://localhost:5173/KanbanBoardMK/
+2. Внутри `<Board>`, замените `boardProps` и `columnProps` на:
+   ```jsx
+   boardProps={{
+       columns,
+       isAddingColumn,
+       setIsAddingColumn,
+       newColumnTitle,
+       setNewColumnTitle,
+       createNewColumn,
+       setCards
+   }}
+   columnProps={{
+       isAddingCard,
+       setIsAddingCard,
+       newCardTitle,
+       setNewCardTitle,
+       createNewCard
+   }}
    ```
 
-## Структура файлов и их описание
+**Изменения в Column.jsx**:
+1. В начале файла, после импорта `Card`, добавьте импорт `Input`:
+   ```jsx
+   import Input from "./UI/Input.jsx";
+   ```
+2. После `<div className="cards">...</div>`, добавьте:
+   ```jsx
+   {columnProps.isAddingCard !== id ? (
+       <h2 className="text-lg font-semibold text-black my-3 cursor-pointer" onClick={() => columnProps.setIsAddingCard(id)}>+ Создать карточку</h2>
+   ) : (
+       <Input
+           className="my-3 text-lg"
+           autoFocus
+           value={columnProps.newCardTitle}
+           onChange={(e) => columnProps.setNewCardTitle(e.target.value)}
+           onBlur={() => columnProps.createNewCard(id)}
+           placeholder="Название карточки..."
+       />
+   )}
+   ```
 
-### 1. `App.jsx`
+**Изменения в Board.jsx**:
+1. В начале файла, после импорта `Column`, добавьте импорт `Input`:
+   ```jsx
+   import Input from "./UI/Input.jsx";
+   ```
+2. После маппинга колонок `{boardProps.columns.map(...)}`, добавьте:
+   ```jsx
+   <div className="columns_new bg-[#8CC5F4] p-3 rounded-lg">
+       {!boardProps.isAddingColumn ? (
+           <h2 className="text-lg font-semibold text-black cursor-pointer" onClick={() => boardProps.setIsAddingColumn(true)}>+ Новая категория</h2>
+       ) : (
+           <Input
+               className="p-0.5"
+               autoFocus
+               value={boardProps.newColumnTitle}
+               onChange={(e) => boardProps.setNewColumnTitle(e.target.value)}
+               onBlur={() => boardProps.createNewColumn()}
+               placeholder="Название категории..."
+           />
+       )}
+   </div>
+   ```
 
-**Назначение**:  
-Это главный компонент приложения, который объединяет все остальные части. Он управляет состоянием всей доски и отображает основной интерфейс.
-
-**Что делает**:
-- Хранит данные о колонках, карточках и состоянии интерфейса (например, открыто ли модальное окно).
-- Отображает заголовок приложения, панель фильтров и доску с колонками.
-- Обрабатывает основные действия: создание колонок и карточек, их редактирование и удаление.
-
-**Основные функции**:
-- **Управление состоянием** (с помощью хука `useState`):
-    - `columns`: Список колонок (например, `{ id: 'first', title: 'Новые' }`).
-    - `cards`: Список карточек с данными (ID, заголовок, описание, метка, дата создания, срок выполнения, колонка).
-    - `isAddingColumn` и `newColumnTitle`: Для добавления новой колонки.
-    - `isAddingCard` и `newCardTitle`: Для добавления новой карточки.
-    - `sortLabel`: Для фильтрации карточек по метке.
-    - `currentCard`: Хранит данные карточки, открытой в модальном окне.
-- **Логика**:
-    - `createNewCard(columnId)`: Создаёт новую карточку в указанной колонке.
-    - `createNewColumn()`: Добавляет новую колонку.
-    - `updateCard(cardId, props)`: Обновляет данные карточки (например, заголовок или описание).
-    - `deleteCard(cardId)`: Удаляет карточку.
-    - `onCardClick(cardId)`: Открывает модальное окно для редактирования карточки.
-    - `closeDialogModal()`: Закрывает модальное окно.
-- **Компоненты**:
-    - Рендерит `Filter` (панель фильтров), `Board` (доску с колонками) и `DialogModal` (модальное окно для редактирования карточки, если оно открыто).
-- **Данные**:
-    - `labelList`: Объект с метками (например, `{ urgent: { title: 'Срочная', color: 'bg-[#FFA3A6]' } }`).
-    - Начальные данные: одна колонка («Новые») и одна карточка («Сделать дизайн»).
-
-**Пример использования**:  
-Этот компонент — «мозг» приложения. Когда пользователь кликает на карточку, `App.jsx` открывает модальное окно. Когда добавляет колонку, `App.jsx` обновляет список колонок.
-
----
-
-### 2. `Board.jsx`
-
-**Назначение**:  
-Отображает доску, состоящую из колонок. Это контейнер для всех колонок и интерфейса добавления новой колонки.
-
-**Что делает**:
-- Рендерит каждую колонку (компонент `Column`) на основе списка колонок из `boardProps`.
-- Показывает кнопку «+ Новая категория» или поле ввода для создания новой колонки.
-
-**Основные функции**:
-- Принимает свойства (`boardProps`, `columnProps`, `cardProps`, `cards`):
-    - `boardProps`: Содержит данные о колонках и функции для их управления (например, `createNewColumn`).
-    - `columnProps`: Функции для создания карточек.
-    - `cardProps`: Свойства для карточек (например, список меток).
-    - `cards`: Отфильтрованный список карточек (например, только с меткой «Срочная», если фильтр активен).
-- Для каждой колонки вызывает компонент `Column`, передавая:
-    - ID и название колонки.
-    - Карточки, относящиеся к этой колонке (фильтруются по `card.column === column.id`).
-- Если пользователь хочет добавить колонку (`isAddingColumn` = `true`), показывает поле ввода (`Input`), иначе — кнопку «+ Новая категория».
-
-**Пример использования**:  
-Если на доске есть колонки «Новые» и «В процессе», `Board.jsx` отобразит их, а в конце покажет кнопку для добавления новой колонки. При клике на кнопку появляется поле ввода, где пользователь вводит название новой колонки.
+**Результат**: Нажмите "+ Новая категория", введите название (например, "В процессе") — появится новая колонка. В колонке "Новые" нажмите "+ Создать карточку", введите название (например, "Купить продукты") — добавится карточка.
 
 ---
 
-### 3. `Column.jsx`
+## Этап 6: Добавляем фильтры (Filter.jsx)
 
-**Назначение**:  
-Отображает одну колонку, содержащую карточки задач и интерфейс для добавления новой карточки.
+**Что делаем**: Создаем компонент `Filter.jsx` для сортировки карточек по меткам.
 
-**Что делает**:
-- Показывает название колонки и список карточек внутри неё.
-- Позволяет добавить новую карточку через кнопку или поле ввода.
+**Инструкции**:
+1. Создайте файл `src/components/Filter.jsx`.
+2. Скопируйте код для `Filter.jsx`.
+3. Отредактируйте `App.jsx`, чтобы добавить фильтр.
 
-**Основные функции**:
-- Принимает свойства:
-    - `id`: Уникальный ID колонки.
-    - `title`: Название колонки (например, «Новые»).
-    - `cards`: Список карточек, относящихся к этой колонке.
-    - `columnProps`: Функции для управления добавлением карточек (например, `createNewCard`).
-    - `cardProps`: Свойства для карточек (например, обработчик клика).
-- Рендерит карточки, вызывая компонент `Card` для каждой карточки.
-- Показывает кнопку «+ Создать карточку» или поле ввода (`Input`) для создания новой карточки, в зависимости от `columnProps.isAddingCard`.
-
-**Пример использования**:  
-Колонка «Новые» содержит три карточки. Пользователь видит их и кнопку «+ Создать карточку». При клике на кнопку появляется поле ввода, где можно ввести название новой карточки. После ввода и потери фокуса карточка создаётся.
-
----
-
-### 4. `Card.jsx`
-
-**Назначение**:  
-Отображает одну карточку задачи с её данными: заголовок, описание, метка, дата создания и срок выполнения.
-
-**Что делает**:
-- Показывает информацию о задаче в компактном виде.
-- Реагирует на клик, открывая модальное окно для редактирования.
-
-**Основные функции**:
-- Принимает свойства:
-    - `cardId`: Уникальный ID карточки.
-    - `title`: Заголовок задачи.
-    - `description`: Описание задачи.
-    - `createdAt`: Дата создания.
-    - `ending`: Срок выполнения (если есть).
-    - `label`: Метка (например, «urgent»).
-    - `labelList`: Список меток с их цветами и названиями.
-    - `onCardClick`: Функция, вызываемая при клике на карточку.
-- Отображает:
-    - Заголовок и срок выполнения (с приставкой «До», если срок указан).
-    - Описание (в укороченном виде).
-    - Дату создания и метку с соответствующим цветом.
-- Использует библиотеку `clsx` для динамического применения CSS-классов (например, для цвета метки).
-
-**Пример использования**:  
-Карточка «Сделать дизайн» показывает заголовок, описание, метку «Срочная» (красный фон) и дату создания. При клике открывается модальное окно для редактирования.
-
----
-
-### 5. `DialogModal.jsx`
-
-**Назначение**:  
-Модальное окно для редактирования или удаления карточки. Открывается при клике на карточку.
-
-**Что делает**:
-- Позволяет изменить заголовок, описание, метку, срок выполнения и колонку карточки.
-- Содержит кнопки «Сохранить» и «Удалить».
-
-**Основные функции**:
-- Принимает свойства:
-    - `card`: Данные карточки (ID, заголовок, описание и т.д.).
-    - `onClose`: Функция для закрытия модального окна.
-    - `onSave`: Функция для сохранения изменений.
-    - `onDelete`: Функция для удаления карточки.
-    - `labelList`: Список меток.
-    - `columns`: Список колонок.
-- **Управление состоянием**:
-    - Хранит временные данные для редактирования (`title`, `description`, `label`, `ending`, `column`) с помощью `useState`.
-- **Интерфейс**:
-    - Поле ввода для заголовка.
-    - Выпадающий список для выбора метки и колонки.
-    - Текстовое поле для описания.
-    - Поле выбора даты для срока выполнения.
-    - Кнопки «Сохранить» (вызывает `onSave`) и «Удалить» (вызывает `onDelete`).
-- Использует компонент `SectionHeader` для заголовков секций с иконками.
-- Стилизован с помощью TailwindCSS (например, размытый фон, тени).
-
-**Пример использования**:  
-Пользователь кликает на карточку «Сделать дизайн», открывается модальное окно. Он меняет описание, выбирает метку «Работа» и устанавливает срок. Нажимает «Сохранить», и данные обновляются.
-
----
-
-### 6. `Filter.jsx`
-
-**Назначение**:  
-Панель фильтров, позволяющая показывать только карточки с определённой меткой или все карточки.
-
-**Что делает**:
-- Отображает кнопки для каждой метки и кнопку «Все».
-- Подсвечивает активный фильтр.
-
-**Основные функции**:
-- Принимает свойства:
-    - `labels`: Список меток (например, `{ urgent: { title: 'Срочная', color: 'bg-[#FFA3A6]' } }`).
-    - `sortLabel`: Текущая активная метка (или пустая строка для «Все»).
-    - `setSortLabel`: Функция для изменения активной метки.
-- Рендерит кнопку «Все» и кнопки для каждой метки.
-- При клике на кнопку вызывает `setSortLabel` с ID метки или пустой строкой (для «Все»).
-- Активная метка подсвечивается (добавляется рамка).
-
-**Пример использования**:  
-Пользователь нажимает на кнопку «Срочная», и на доске отображаются только карточки с меткой «Срочная». Нажимает «Все» — показываются все карточки.
-
----
-
-## Технологии, используемые в проекте
-
-Ниже приведено подробное, но понятное описание технологий, использованных в проекте Kanban-доски. Мы сосредоточимся на **React**, так как это основная технология для создания интерфейса, а также кратко упомянем **Vite**, **TailwindCSS** и **Heroicons**, чтобы дать полную картину.
-
----
-
-### React
-
-**Что это?**  
-React — это библиотека JavaScript, созданная Facebook, которая используется для построения интерактивных пользовательских интерфейсов, особенно для одностраничных приложений (SPA). В нашем проекте Kanban-доски React отвечает за создание и управление всеми элементами интерфейса: колонками, карточками, модальным окном и фильтрами.
-
-**Зачем используется в проекте?**  
-React позволяет разбивать интерфейс на небольшие, переиспользуемые кусочки (компоненты), такие как `Card`, `Column` или `DialogModal`. Это делает код организованным, легким для понимания и поддержки. React также эффективно обновляет интерфейс, когда данные меняются, что важно для динамической Kanban-доски, где пользователь добавляет, редактирует или удаляет карточки.
-
-**Как работает React в проекте?**  
-React строит интерфейс с помощью следующих ключевых концепций:
-
-
-## Концепции React: Подробное и понятное объяснение
-
----
-
-### 1. Компоненты
-
-**Что это?**  
-Компоненты — это основные строительные блоки React. Это как LEGO: каждый компонент — это отдельная деталь интерфейса, которую можно соединять с другими, чтобы собрать полноценное приложение. Компонент может быть маленьким (например, кнопка) или большим (например, целая страница).
-
-**Как это работает в проекте?**  
-В Kanban-доске каждый кусочек интерфейса — это компонент. Например:
-- `Card.jsx` — компонент, который отображает одну карточку задачи с заголовком, описанием и меткой.
-- `Column.jsx` — компонент для одной колонки, содержащей карточки.
-- `App.jsx` — главный компонент, который объединяет все остальные, включая заголовок, фильтры и доску.
-
-Компоненты в React — это функции, которые возвращают JSX (синтаксис, похожий на HTML). Например, в `Card.jsx`:
+**Код для Filter.jsx**:
 ```jsx
-return (
-  <div className="card bg-[#E1EFFB]">
-    <h2 className="text-xl text-black font-semibold">{props.title}</h2>
-    <p className="text-xs text-black">{new Date(props.createdAt).toLocaleDateString()}</p>
-  </div>
-);
-```
-Этот код говорит: «Создай карточку с заголовком и датой создания».
+import React from 'react';
 
-**Почему это важно?**  
-Компоненты делают код организованным. Если нужно изменить внешний вид карточки, вы редактируете только `Card.jsx`, а не весь проект. Компоненты также переиспользуемы: один компонент `Card` используется для всех карточек на доске.
+export default function Filter({ labels, sortLabel, setSortLabel }) {
+    return (
+        <div className="bg-column drop-shadow-2xl h-fit flex flex-row p-4 gap-10">
+            <span
+                className="card-label active:scale-105 text-black text-sm font-semibold bg-white mr-20"
+                onClick={() => setSortLabel("")}
+            >
+                Все
+            </span>
+            {Object.entries(labels).map(([id, label]) => (
+                <span
+                    key={id}
+                    className={`card-label active:scale-105 text-black text-sm font-semibold ${sortLabel === id ? `${label.color} border-3` : label.color}`}
+                    onClick={() => setSortLabel(id)}
+                >
+                    {label.title}
+                </span>
+            ))}
+        </div>
+    );
+}
+```
+
+**Изменения в App.jsx**:
+1. В начале файла, после импорта `Board`, добавьте импорт `Filter`:
+   ```jsx
+   import Filter from "./components/Filter.jsx";
+   ```
+2. Перед `return`, после состояния `newCardTitle`, добавьте:
+   ```jsx
+   const [sortLabel, setSortLabel] = useState("");
+   ```
+3. Внутри `<div className="main-area bg-[#2499EC] p-4">`, перед `<Board>`, добавьте:
+   ```jsx
+   <Filter
+       labels={labelList}
+       sortLabel={sortLabel}
+       setSortLabel={setSortLabel}
+   />
+   ```
+4. В `<Board>`, замените `cards={cards}` на:
+   ```jsx
+   cards={cards.filter((card) => !sortLabel || card.label === sortLabel)}
+   ```
+
+**Результат**: Появится панель с фильтрами "Все", "Срочная", "Нет метки". Нажмите "Срочная" — останутся карточки с меткой "Срочная". Нажмите "Все" — вернутся все карточки.
 
 ---
 
-### 2. JSX
+## Этап 7: Добавляем модальное окно (DialogModal.jsx)
 
-**Что это?**  
-JSX — это синтаксис, который позволяет писать HTML-подобный код внутри JavaScript. Он нужен, чтобы описывать, как должен выглядеть интерфейс в компонентах.
+**Что делаем**: Создаем компонент `DialogModal.jsx` для редактирования и удаления карточек.
 
-**Как это работает в проекте?**  
-В `DialogModal.jsx` JSX используется для создания модального окна:
+**Инструкции**:
+1. Создайте файл `src/components/DialogModal.jsx`.
+2. Скопируйте код для `DialogModal.jsx`.
+3. Отредактируйте `App.jsx`, чтобы открыть модальное окно при клике на карточку.
+
+**Код для DialogModal.jsx**:
 ```jsx
-return (
-  <div className="fixed z-10 inset-0 backdrop-blur-xs flex flex-col pt-30 items-center">
-    <div className="w-[600px] h-[660px] bg-[#E1EFFB] rounded-xl drop-shadow-2xl flex flex-col gap-5 p-3">
-      <input
-        value={title}
-        maxLength={30}
-        placeholder="Название карточки..."
-        onChange={(e) => setTitle(e.target.value)}
-        className="font-semibold w-[250px] text-2xl text-black focus:outline-none"
-      />
-      <Button className="w-[160px]" onClick={() => save()} color="bg-[#B6FA99]" text="Сохранить" />
-    </div>
-  </div>
-);
+import React, { useState } from 'react';
+import { Square2StackIcon, XMarkIcon } from "@heroicons/react/16/solid/index.js";
+import Button from "./UI/Button.jsx";
+
+export default function DialogModal({ card, onClose, onSave, onDelete, labelList, columns }) {
+    const [title, setTitle] = useState(card.title);
+    const [description, setDescription] = useState(card.description);
+    const [label, setLabel] = useState(card.label);
+
+    const save = () => {
+        onSave(card.cardId, { ...card, title, description, label });
+    };
+
+    return (
+        <div className="fixed z-10 inset-0 backdrop-blur-xs flex flex-col pt-30 items-center">
+            <div className="w-[600px] h-[400px] bg-[#E1EFFB] rounded-xl drop-shadow-2xl flex flex-col gap-5 p-3">
+                <div className="flex flex-row gap-5 items-center">
+                    <Square2StackIcon className="fill-black w-5"/>
+                    <input
+                        value={title}
+                        maxLength={30}
+                        placeholder="Название карточки..."
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="font-semibold w-[250px] text-2xl text-black focus:outline-none placeholder:text-lg"
+                    />
+                    <XMarkIcon
+                        className="ml-auto w-5 fill-black cursor-pointer"
+                        onClick={onClose}
+                    />
+                </div>
+                <div className="flex flex-row gap-5">
+                    <select
+                        value={label}
+                        onChange={(e) => setLabel(e.target.value)}
+                        className={`w-[160px] h-[30px] ml-10 px-5 rounded-full drop-shadow-sm text-black text-lg font-semibold focus:outline-none ${labelList[label].color}`}
+                    >
+                        {Object.entries(labelList).map(([key, data]) => (
+                            <option key={key} value={key} className="bg-white">
+                                {data.title}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <textarea
+                    value={description}
+                    placeholder="Описание карточки..."
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="resize-none p-3 rounded-xl drop-shadow-sm bg-amber-50 w-[500px] h-[120px] ml-10 text-sm text-black focus:outline-none"
+                />
+                <div className="flex flex-row gap-10 ml-10">
+                    <Button
+                        className="w-[160px]"
+                        onClick={() => save()}
+                        color="bg-[#B6FA99]"
+                        text="Сохранить"
+                    />
+                    <Button
+                        className="w-[160px]"
+                        onClick={() => onDelete(card.cardId)}
+                        color="bg-[#FFA3A6]"
+                        text="Удалить"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
 ```
-Здесь JSX описывает модальное окно с полем ввода и кнопкой. Хотя это выглядит как HTML, на самом деле это JavaScript, который React преобразует в реальные элементы на странице.
 
-**Почему это важно?**  
-JSX позволяет писать интерфейс и логику в одном месте. Например, в коде выше поле ввода связано с состоянием `title`, и изменение текста сразу обновляет данные. Это делает разработку интуитивной.
+**Изменения в App.jsx**:
+1. В начале файла, после импорта `Filter`, добавьте импорт `DialogModal`:
+   ```jsx
+   import DialogModal from "./components/DialogModal.jsx";
+   ```
+2. Перед `return`, после состояния `sortLabel`, добавьте:
+   ```jsx
+   const [currentCard, setCurrentCard] = useState('');
 
----
+   const updateCard = (cardId, props) => {
+       setCards((prev) =>
+           prev.map(card => card.cardId === cardId ? { ...card, ...props } : card)
+       );
+       setCurrentCard('');
+   };
 
-### 3. Состояние (State)
+   const deleteCard = (cardId) => {
+       setCards(cards.filter(card => card.cardId !== cardId));
+       setCurrentCard('');
+   };
 
-**Что это?**  
-Состояние — это данные, которые могут меняться во время работы приложения, например, список карточек или текст в поле ввода. React использует хук `useState` для управления состоянием.
+   const closeDialogModal = () => {
+       if (!currentCard) return;
+       setCurrentCard("");
+   };
 
-**Как это работает в проекте?**  
-В `App.jsx` состояние используется для хранения данных всей доски:
-```jsx
-const [cards, setCards] = useState(cardsData);
-const [currentCard, setCurrentCard] = useState('');
-```
-- `cards` — это массив всех карточек. Когда пользователь добавляет новую карточку, `setCards` обновляет этот массив.
-- `currentCard` хранит данные карточки, открытой в модальном окне. Когда пользователь кликает на карточку, `setCurrentCard` устанавливает её данные.
+   const onCardClick = (cardId) => {
+       const card = cards.find(card => card.cardId === cardId);
+       setCurrentCard(card);
+   };
+   ```
+3. Внутри `<div className="main-area bg-[#2499EC] p-4">`, перед `<Filter>`, добавьте:
+   ```jsx
+   {currentCard ? (
+       <DialogModal
+           card={currentCard}
+           onClose={closeDialogModal}
+           onSave={updateCard}
+           onDelete={deleteCard}
+           labelList={labelList}
+           columns={columns}
+       />
+   ) : (<div></div>)}
+   ```
+4. В `<Board>`, замените `cardProps={{ labelList }}` на:
+   ```jsx
+   cardProps={{ labelList, onCardClick }}
+   ```
 
-В `DialogModal.jsx` состояние используется для временного хранения изменений:
-```jsx
-const [title, setTitle] = useState(card.title);
-```
-Когда пользователь меняет заголовок карточки, `setTitle` обновляет `title`, но это не влияет на исходные данные, пока не нажата кнопка «Сохранить».
-
-**Пример в действии**:
-1. Пользователь открывает карточку «Сделать дизайн» → `currentCard` обновляется.
-2. В модальном окне он меняет заголовок на «Создать UI» → `title` в `DialogModal` обновляется.
-3. При нажатии «Сохранить» вызывается `onSave`, которое обновляет `cards` в `App.jsx`, и доска перерисовывается с новым заголовком.
-
-**Почему это важно?**  
-Состояние делает приложение динамичным. Без него карточки не могли бы обновляться, добавляться или удаляться. React автоматически перерисовывает интерфейс, когда состояние меняется, что упрощает разработку.
-
----
-
-### 4. Пропсы (Props)
-
-**Что это?**  
-Пропсы — это способ передачи данных от родительского компонента к дочернему. Они похожи на аргументы функции: родительский компонент «говорит» дочернему, что отображать или как работать.
-
-**Как это работает в проекте?**  
-В `Board.jsx` компонент `Column` получает пропсы:
-```jsx
-<Column
-  key={index}
-  id={column.id}
-  title={column.title}
-  cards={cards.filter((card) => card.column === column.id)}
-  columnProps={columnProps}
-  cardProps={cardProps}
-/>
-```
-- `id` и `title` определяют, какую колонку отображать (например, «Новые»).
-- `cards` — список карточек для этой колонки.
-- `columnProps` и `cardProps` содержат функции, такие как `createNewCard` или `onCardClick`.
-
-В `Card.jsx` пропсы задают содержимое карточки:
-```jsx
-<h2 className="text-xl text-black font-semibold">{props.title}</h2>
-```
-Здесь `props.title` — это заголовок карточки, переданный из `Column.jsx`.
-
-**Пример в действии**:
-- `App.jsx` передаёт список карточек в `Board.jsx`.
-- `Board.jsx` фильтрует карточки по колонкам и передаёт нужные в `Column.jsx`.
-- `Column.jsx` передаёт данные каждой карточки в `Card.jsx`.
-  Когда пользователь кликает на карточку, `Card.jsx` вызывает `props.onCardClick`, переданный из `App.jsx`, чтобы открыть модальное окно.
-
-**Почему это важно?**  
-Пропсы делают компоненты универсальными. Например, один компонент `Card` может отображать любую карточку, просто получая разные пропсы. Это уменьшает дублирование кода и упрощает поддержку.
+**Результат**: Кликните на карточку — откроется модальное окно. Измените название, описание или метку, нажмите "Сохранить" — карточка обновится. Нажмите "Удалить" — карточка исчезнет.
 
 ---
 
-### 5. Обработчики событий
+## Полезные советы
 
-**Что это?**  
-Обработчики событий — это функции, которые React вызывает, когда пользователь что-то делает, например, кликает на кнопку или вводит текст. Они задаются с помощью атрибутов, таких как `onClick` или `onChange`.
+- **Для инструктора**:
+  - Показывайте на экране, куда вставлять код, и объясняйте в 1-2 предложениях (например, "Это добавляет кнопку для создания карточек").
+  - Давайте школьникам 1-2 минуты на копирование/вставку и проверку результата.
+  - После каждого этапа спрашивайте: "Кто видит новую карточку? У кого открылось окно?".
+- **Для школьников**:
+  - Если что-то не работает, проверьте, правильно ли вставлен код, и спросите инструктора.
+  - Вставляйте код точно в указанное место, чтобы ничего не сломать!
+- **Время**: 7 этапов по ~2-3 минуты (копирование + объяснение + проверка) укладываются в 15 минут.
+- **Упрощение**: Если времени мало, пропустите Этап 7 (модальное окно) — доска останется функциональной с колонками, карточками и фильтрами.
+- **Зависимости**: Убедитесь, что `UI/Input.jsx` и `UI/Button.jsx` существуют или замените их на стандартные `<input>` и `<button>` для простоты, например:
+  - Для `Input.jsx`:
+    ```jsx
+    import React from 'react';
 
-**Как это работает в проекте?**  
-В `Card.jsx` карточка реагирует на клик:
-```jsx
-<div className="card bg-[#E1EFFB]" onClick={() => props.onCardClick(props.cardId)}>
-```
-Когда пользователь кликает на карточку, вызывается `onCardClick` с ID карточки, что открывает модальное окно.
+    export default function Input(props) {
+        return <input {...props} />;
+    }
+    ```
+  - Для `Button.jsx`:
+    ```jsx
+    import React from 'react';
 
-В `DialogModal.jsx` поле ввода реагирует на изменение текста:
-```jsx
-<input
-  value={title}
-  onChange={(e) => setTitle(e.target.value)}
-/>
-```
-Когда пользователь вводит текст, `setTitle` обновляет состояние `title`.
-
-**Пример в действии**:
-1. Пользователь кликает на кнопку «+ Создать карточку» в `Column.jsx` → вызывается `columnProps.setIsAddingCard`, и появляется поле ввода.
-2. Пользователь вводит название карточки → `onChange` обновляет `newCardTitle` в `App.jsx`.
-3. При потере фокуса (`onBlur`) вызывается `createNewCard`, и новая карточка добавляется на доску.
-
-**Почему это важно?**  
-Обработчики событий делают приложение интерактивным. Без них пользователь не мог бы добавлять карточки, редактировать их или фильтровать по меткам.
-
----
-
-### 6. Односторонний поток данных
-
-**Что это?**  
-В React данные текут в одном направлении: от родительского компонента к дочерним. Дочерние компоненты не могут напрямую менять данные родителя — они вызывают функции, переданные через пропсы.
-
-**Как это работает в проекте?**
-- В `App.jsx` хранятся все данные (список карточек, колонок и т.д.).
-- Эти данные передаются через пропсы в `Board.jsx`, затем в `Column.jsx` и `Card.jsx`.
-- Если `Card.jsx` нужно открыть модальное окно, он вызывает `props.onCardClick`, переданный из `App.jsx`.
-- Если `DialogModal.jsx` нужно сохранить изменения, он вызывает `props.onSave`, который обновляет данные в `App.jsx`.
-
-**Пример в действии**:  
-Когда пользователь меняет метку карточки в `DialogModal.jsx`, компонент не меняет данные напрямую. Вместо этого он обновляет своё состояние (`setLabel`), а при нажатии «Сохранить» вызывает `onSave`, которое обновляет `cards` в `App.jsx`. Это гарантирует, что данные всегда синхронизированы.
-
-**Почему это важно?**  
-Односторонний поток данных делает приложение предсказуемым. Вы всегда знаете, где хранятся данные (в `App.jsx`) и как они обновляются, что упрощает отладку.
+    export default function Button({ className, onClick, color, text }) {
+        return (
+            <button className={`${className} ${color} text-black font-semibold py-2 rounded`} onClick={onClick}>
+                {text}
+            </button>
+        );
+    }
+    ```
 
 ---
 
-### 7. Виртуальный DOM
+## Почему это подходит для школьников?
 
-**Что это?**  
-DOM (Document Object Model) — это структура веб-страницы, которую браузер использует для отображения элементов. React создаёт виртуальный DOM — упрощённую копию реального DOM, которая хранится в памяти.
-
-**Как это работает в проекте?**  
-Когда данные меняются (например, добавляется новая карточка), React:
-1. Создаёт новый виртуальный DOM с учётом изменений.
-2. Сравнивает его со старым виртуальным DOM.
-3. Обновляет только те части реального DOM, которые изменились.
-
-Например, если пользователь добавляет карточку в колонку «Новые», React не перерисовывает всю доску — он добавляет только новую карточку в нужное место.
-
-**Пример в действии**:  
-Когда пользователь сохраняет изменения в `DialogModal.jsx`, React обновляет массив `cards` в `App.jsx`. Затем React перерисовывает только те компоненты (`Column` и `Card`), которые зависят от изменённых данных, а не всю страницу.
-
-**Почему это важно?**  
-Виртуальный DOM делает приложение быстрым. Без него браузер перерисовывал бы всю страницу при каждом изменении, что замедлило бы работу с большим количеством карточек.
+1. **Логичный порядок**: Начинаем с базового `App.jsx`, добавляем компоненты (`Card`, `Column`, `Board`), затем интерактивность (создание, фильтры, модалка).
+2. **Простота**: Код разбит на маленькие блоки, которые легко вставлять в указанные места.
+3. **Интерактивность**: Каждый этап дает результат (заголовок, карточка, колонка, новая карточка, фильтры, модалка).
+4. **Образовательная ценность**: Учатся создавать React-компоненты и работать с состояниями без сложных концепций.
+5. **Весело**: Добавление карточек, фильтрация и редактирование увлекают.
 
 ---
 
-### 8. Хуки (Hooks)
-
-**Что это?**  
-Хуки — это специальные функции React, которые позволяют управлять состоянием, эффектами и другими возможностями в функциональных компонентах. В проекте используется хук `useState`.
-
-**Как это работает в проекте?**
-- В `App.jsx`:
-  ```jsx
-  const [columns, setColumns] = useState(initialColumns);
-  ```
-  Хук `useState` создаёт переменную `columns` и функцию `setColumns` для её обновления. Когда пользователь добавляет колонку, `setColumns` обновляет список.
-
-- В `DialogModal.jsx`:
-  ```jsx
-  const [title, setTitle] = useState(card.title);
-  ```
-  Хук хранит текущий заголовок карточки и обновляет его при вводе текста.
-
-**Пример в действии**:  
-Когда пользователь фильтрует карточки по метке «Срочная» в `Filter.jsx`, вызывается `setSortLabel`, что обновляет состояние `sortLabel` в `App.jsx`. React перерисовывает доску, показывая только карточки с этой меткой.
-
-**Почему это важно?**  
-Хуки делают функциональные компоненты мощными, позволяя управлять состоянием без сложных классов. Это упрощает код и делает его понятнее.
-
----
-
-### Как эти концепции работают вместе в Kanban-доске?
-
-1. **Компоненты** разбивают интерфейс на части: `App`, `Board`, `Column`, `Card`, `DialogModal`, `Filter`.
-2. **JSX** описывает, как эти компоненты выглядят (например, карточка с заголовком и меткой).
-3. **Состояние** хранит данные (список карточек, текущая метка фильтра).
-4. **Пропсы** передают данные и функции между компонентами (например, список карточек из `App` в `Board`).
-5. **Обработчики событий** реагируют на действия пользователя (клик на карточку, ввод текста).
-6. **Односторонний поток данных** обеспечивает порядок: данные меняются только через функции в `App`.
-7. **Виртуальный DOM** обновляет интерфейс быстро и эффективно.
-8. **Хуки** позволяют компонентам хранить и обновлять данные (например, текст в поле ввода).
-
-**Пример сценария**:  
-Пользователь кликает на карточку (`Card.jsx`), вызывается `onCardClick` (обработчик событий), который обновляет `currentCard` (состояние) в `App.jsx`. React рендерит `DialogModal` (компонент) с данными карточки (переданными через пропсы). Пользователь меняет заголовок, что обновляет состояние в `DialogModal` (хуки). При сохранении вызывается `onSave`, обновляется `cards` в `App`, и React перерисовывает доску (виртуальный DOM).
-
----
-
-### Почему эти концепции делают React крутым для Kanban-доски?
-
-- **Модульность**: Компоненты позволяют легко добавлять новые функции, например, кнопку для дублирования карточки.
-- **Динамичность**: Состояние и хуки делают интерфейс живым — всё обновляется мгновенно.
-- **Простота**: JSX и пропсы упрощают написание и чтение кода.
-- **Эффективность**: Виртуальный DOM обеспечивает быструю работу даже с большим количеством карточек.
-- **Предсказуемость**: Односторонний поток данных уменьшает ошибки.
-
-React делает разработку Kanban-доски удобной, позволяя сосредоточиться на создании функционала, а не на сложной работе с DOM или управлении данными.
-
----
-
-### Vite
-
-**Что это?**  
-Vite — это инструмент для быстрой разработки и сборки веб-приложений. Он используется для запуска проекта в режиме разработки и создания оптимизированной версии для продакшена.
-
-**Зачем используется?**  
-Vite обеспечивает быструю загрузку проекта во время разработки благодаря мгновенному обновлению страницы при изменении кода (Hot Module Replacement). Он также упрощает настройку React-проекта, включая поддержку TailwindCSS.
-
-**Как работает в проекте?**
-- Команда `npm run dev` запускает Vite, который открывает локальный сервер (обычно `http://localhost:5173`).
-- Vite компилирует React-код и TailwindCSS-стили, обеспечивая быструю работу приложения.
-- При изменении файлов (например, добавлении стиля в `Card.jsx`) Vite автоматически обновляет страницу в браузере.
-
-**Почему Vite?**
-- Быстрее, чем традиционные инструменты, такие как Create React App.
-- Простая настройка для React и TailwindCSS.
-- Удобен для учебных проектов, так как требует минимум конфигурации.
-
----
-
-### TailwindCSS
-
-**Что это?**  
-TailwindCSS — это CSS-фреймворк, который предоставляет готовые утилиты (классы) для стилизации. Вместо написания CSS вручную вы добавляете классы, такие как `bg-[#E1EFFB]` или `text-xl`, прямо в JSX.
-
-**Зачем используется?**  
-TailwindCSS ускоряет стилизацию, позволяя создавать красивый интерфейс без написания отдельных CSS-файлов. В проекте он отвечает за внешний вид колонок, карточек, модального окна и кнопок.
-
-**Как работает в проекте?**
-- В файлах, таких как `Card.jsx` или `DialogModal.jsx`, стили задаются через классы Tailwind. Например:
-    - `bg-[#E1EFFB]` задаёт голубой фон для карточек.
-    - `flex flex-row gap-5` создаёт горизонтальный контейнер с отступами между элементами.
-    - `hover:bg-[#E6F8FF] hover:scale-105` добавляет эффект наведения для карточек.
-- TailwindCSS автоматически генерирует только те стили, которые используются, что уменьшает размер итогового CSS-файла.
-
-**Почему TailwindCSS?**
-- Быстрая стилизация без написания CSS.
-- Консистентный дизайн благодаря заранее заданным цветам, отступам и шрифтам.
-- Легко кастомизировать (например, добавить новые цвета в конфигурации).
-
----
-
-### Heroicons
-
-**Что это?**  
-Heroicons — это библиотека SVG-иконок, созданная для использования в веб-приложениях. Она предоставляет набор минималистичных иконок, которые легко интегрируются с React.
-
-**Зачем используется?**  
-Иконки делают интерфейс более интуитивным и привлекательным. В проекте они используются для обозначения действий, таких как закрытие модального окна или добавление карточки.
-
-**Как работает в проекте?**
-- В `DialogModal.jsx` и `App.jsx` импортируются иконки, такие как `XMarkIcon`, `BellIcon` или `Squares2X2Icon`.
-- Иконки добавляются как React-компоненты с классами Tailwind для настройки размера и цвета. Например:
-  ```jsx
-  <XMarkIcon className="ml-auto w-5 fill-black cursor-pointer" />
-
-**Примечания**
-- Проект предназначен для образовательных целей и может быть расширен (например, добавлением drag-and-drop для перемещения карточек).
-- Все стили заданы через TailwindCSS, что упрощает изменение дизайна.
-- Данные хранятся в состоянии React (в памяти) и не сохраняются при перезагрузке страницы. Для постоянного хранения можно добавить backend или localStorage.
+Если нужно что-то уточнить, упростить или добавить (например, примеры `Input.jsx`/`Button.jsx` или анимации), дайте знать, и я доработаю!
