@@ -110,7 +110,7 @@ export default function Card(props) {
 import React from "react";
 import Card from "./Card";
 
-export default function Column({ id, title, cards, cardProps }) {
+export default function Column({ id, title, cards, cardProps, columnProps }) {
     return (
         <div className="column bg-[#8CC5F4] p-3 rounded-lg">
             <h2 className="text-xl font-bold text-black mb-3">{title}</h2>
@@ -259,18 +259,24 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
        urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
        none: {title: 'Нет метки', color: 'bg-gray-400'}
    };
+   
+   const initialColumns = [
+        { id: 'first', title: 'Новые' }
+   ];
+    
+   const initCards = [
+        {
+            cardId: crypto.randomUUID(),
+            column: 'first',
+            title: "Сделать дизайн",
+            description: "Нарисовать UI для главной страницы",
+            createdAt: "2025-04-17T12:00:00Z",
+            label: "urgent"
+        }
+    ];
 
-   const [columns, setColumns] = useState([{ id: 'first', title: 'Новые' }]);
-   const [cards, setCards] = useState([
-       {
-           cardId: crypto.randomUUID(),
-           column: 'first',
-           title: "Сделать дизайн",
-           description: "Нарисовать UI для главной страницы",
-           createdAt: "2025-04-17T12:00:00Z",
-           label: "urgent"
-       }
-   ]);
+   const [columns, setColumns] = useState(initialColumns);
+   const [cards, setCards] = useState(initCards);
    const [isAddingColumn, setIsAddingColumn] = useState(false);
    const [newColumnTitle, setNewColumnTitle] = useState("");
    const [isAddingCard, setIsAddingCard] = useState(false);
@@ -450,34 +456,45 @@ export default function Filter({ labels, sortLabel, setSortLabel }) {
 
 **Код для DialogModal.jsx**:
 ```jsx
-import React, { useState } from 'react';
-import { Square2StackIcon, XMarkIcon } from "@heroicons/react/16/solid/index.js";
+import React, {useState} from 'react';
+import {Bars3BottomLeftIcon, Square2StackIcon, XMarkIcon} from "@heroicons/react/16/solid/index.js";
+import {BellIcon, WrenchIcon} from "@heroicons/react/24/outline/index.js";
 import Button from "./UI/Button.jsx";
 
 export default function DialogModal({ card, onClose, onSave, onDelete, labelList, columns }) {
     const [title, setTitle] = useState(card.title);
     const [description, setDescription] = useState(card.description);
+    const [column, setColumn] = useState(card.column)
     const [label, setLabel] = useState(card.label);
+    const [ending, setEnding] = useState(card.ending);
 
     const save = () => {
-        onSave(card.cardId, { ...card, title, description, label });
+        onSave(card.cardId, {...card, title, description, label, ending, column})
     };
+
+    const SectionHeader = ({ icon: Icon, text }) => (
+        <div className="flex items-center gap-5">
+            <Icon className="w-5 stroke-black" />
+            <h3 className="text-2xl font-semibold text-black">{text}</h3>
+        </div>
+    );
 
     return (
         <div className="fixed z-10 inset-0 backdrop-blur-xs flex flex-col pt-30 items-center">
-            <div className="w-[600px] h-[400px] bg-[#E1EFFB] rounded-xl drop-shadow-2xl flex flex-col gap-5 p-3">
+            <div className=" w-[600px] h-[660px] bg-[#E1EFFB] rounded-xl drop-shadow-2xl flex flex-col gap-5 p-3">
                 <div className="flex flex-row gap-5 items-center">
                     <Square2StackIcon className="fill-black w-5"/>
                     <input
                         value={title}
                         maxLength={30}
                         placeholder="Название карточки..."
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="font-semibold w-[250px] text-2xl text-black focus:outline-none placeholder:text-lg"
-                    />
-                    <XMarkIcon
-                        className="ml-auto w-5 fill-black cursor-pointer"
-                        onClick={onClose}
+                        onChange={(e) => {
+                            setTitle(e.target.value)
+                        }}
+                        className="font-semibold w-[250px] text-2xl text-black focus:outline-none placeholder:text-lg"/>
+                    <p className="font-semibold text-xs text-black">{new Date(card.createdAt).toLocaleString()}</p>
+                    <XMarkIcon className="ml-auto w-5 fill-black cursor-pointer"
+                               onClick={onClose}
                     />
                 </div>
                 <div className="flex flex-row gap-5">
@@ -492,13 +509,38 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
                             </option>
                         ))}
                     </select>
+                    <select
+                        value={column}
+                        onChange={(e) => setColumn(e.target.value)}
+                        className={`w-[160px] h-[30px] ml-auto mr-10 px-5 bg-white rounded-lg drop-shadow-sm text-black text-lg font-semibold focus:outline-none`}
+                    >
+                        {Object.entries(columns).map(([key, data]) => (
+                            <option key={key} value={data.id} className="bg-white">
+                                {data.title}
+                            </option>
+                        ))}
+                    </select>
                 </div>
+                <SectionHeader icon={Bars3BottomLeftIcon} text="Срок исполнения" />
                 <textarea
                     value={description}
                     placeholder="Описание карточки..."
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                        setDescription(e.target.value)
+                    }}
                     className="resize-none p-3 rounded-xl drop-shadow-sm bg-amber-50 w-[500px] h-[120px] ml-10 text-sm text-black focus:outline-none"
                 />
+                <SectionHeader icon={BellIcon} text="Срок исполнения" />
+                <input
+                    type="date"
+                    value={ending}
+                    placeholder=""
+                    onChange={(e) => {
+                        setEnding(e.target.value)
+                    }}
+                    className="ml-10 text-black text-lg font-semibold scheme-light w-fit rounded-xl bg-amber-50 px-5 py-1 drop-shadow-sm focus:outline-none"
+                />
+                <SectionHeader icon={WrenchIcon} text="Срок исполнения" />
                 <div className="flex flex-row gap-10 ml-10">
                     <Button
                         className="w-[160px]"
@@ -513,7 +555,9 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
                         text="Удалить"
                     />
                 </div>
+
             </div>
+
         </div>
     );
 }
@@ -568,53 +612,11 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
    cardProps={{ labelList, onCardClick }}
    ```
 
+**Изменения в Card.jsx**:
+1. После `return`, после `<div className="..."`, добавьте:
+   ```jsx
+   onClick={() => props.onCardClick(props.cardId)}
+   ```
+
+
 **Результат**: Кликните на карточку — откроется модальное окно. Измените название, описание или метку, нажмите "Сохранить" — карточка обновится. Нажмите "Удалить" — карточка исчезнет.
-
----
-
-## Полезные советы
-
-- **Для инструктора**:
-  - Показывайте на экране, куда вставлять код, и объясняйте в 1-2 предложениях (например, "Это добавляет кнопку для создания карточек").
-  - Давайте школьникам 1-2 минуты на копирование/вставку и проверку результата.
-  - После каждого этапа спрашивайте: "Кто видит новую карточку? У кого открылось окно?".
-- **Для школьников**:
-  - Если что-то не работает, проверьте, правильно ли вставлен код, и спросите инструктора.
-  - Вставляйте код точно в указанное место, чтобы ничего не сломать!
-- **Время**: 7 этапов по ~2-3 минуты (копирование + объяснение + проверка) укладываются в 15 минут.
-- **Упрощение**: Если времени мало, пропустите Этап 7 (модальное окно) — доска останется функциональной с колонками, карточками и фильтрами.
-- **Зависимости**: Убедитесь, что `UI/Input.jsx` и `UI/Button.jsx` существуют или замените их на стандартные `<input>` и `<button>` для простоты, например:
-  - Для `Input.jsx`:
-    ```jsx
-    import React from 'react';
-
-    export default function Input(props) {
-        return <input {...props} />;
-    }
-    ```
-  - Для `Button.jsx`:
-    ```jsx
-    import React from 'react';
-
-    export default function Button({ className, onClick, color, text }) {
-        return (
-            <button className={`${className} ${color} text-black font-semibold py-2 rounded`} onClick={onClick}>
-                {text}
-            </button>
-        );
-    }
-    ```
-
----
-
-## Почему это подходит для школьников?
-
-1. **Логичный порядок**: Начинаем с базового `App.jsx`, добавляем компоненты (`Card`, `Column`, `Board`), затем интерактивность (создание, фильтры, модалка).
-2. **Простота**: Код разбит на маленькие блоки, которые легко вставлять в указанные места.
-3. **Интерактивность**: Каждый этап дает результат (заголовок, карточка, колонка, новая карточка, фильтры, модалка).
-4. **Образовательная ценность**: Учатся создавать React-компоненты и работать с состояниями без сложных концепций.
-5. **Весело**: Добавление карточек, фильтрация и редактирование увлекают.
-
----
-
-Если нужно что-то уточнить, упростить или добавить (например, примеры `Input.jsx`/`Button.jsx` или анимации), дайте знать, и я доработаю!
