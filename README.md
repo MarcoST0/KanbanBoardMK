@@ -3,7 +3,7 @@
 В этом мастер-классе мы создадим Kanban-доску за 15 минут! Вы научитесь добавлять карточки, колонки, фильтровать задачи по меткам и редактировать их в модальном окне. Каждый этап добавляет новую часть приложения, и вы сразу увидите результат!
 
 ## Этап 0: Начальная заготовка
-Проект уже настроен, и в нем есть файл `src/App.jsx`. Откройте его и запустите приложение (в ? с помощью `npm intall + npm run dev`). Вы увидите:
+Проект уже настроен, и в нем есть файл `src/App.jsx`. Откройте его и запустите приложение (в WebStorm с помощью `npm intall + npm run dev`). Вы увидите:
 - Заголовок "Добро пожаловать в Kanban Workshop!".
 - Короткий текст с описанием.
 - Интерактивную кнопку, которая считает, сколько раз вы на нее кликнули.
@@ -684,7 +684,7 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
    return (
    
    <div className="card bg-[#E1EFFB] hover:bg-[#E6F8FF] hover:scale-105"
-             ~onClick={() => props.onCardClick(props.cardId)}>
+             onClick={() => props.onCardClick(props.cardId)}>
       
        <div>
       ...
