@@ -195,7 +195,7 @@ export default function Column({ id, title, cards, cardProps, columnProps }) {
 ```
 
 **Изменения в App.jsx**:
-1. В начале файла, замените импорт `Card` на импорт `Column`:
+1. В начале файла, добавьте импорт `Column`:
    ```jsx
    import Column from "./components/Column.jsx";
    ```
@@ -206,7 +206,7 @@ export default function Column({ id, title, cards, cardProps, columnProps }) {
        none: {title: 'Нет метки', color: 'bg-gray-400'}
    };
 
-   const cards = [
+   const initCards = [
        {
            cardId: crypto.randomUUID(),
            title: "Сделать дизайн",
@@ -221,7 +221,7 @@ export default function Column({ id, title, cards, cardProps, columnProps }) {
    <Column
        id="first"
        title="Новые"
-       cards={cards}
+       cards={initCards}
        cardProps={{ labelList }}
    />
    ```
@@ -263,10 +263,8 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
 ```
 
 **Изменения в App.jsx**:
-1. В начале файла, замените импорт `Column` на импорт `Board` и добавьте `useState`:
+1. В начале файла, добавьте импорт `Board`:
    ```jsx
-   import React, { useState } from "react";
-   import { Squares2X2Icon } from "@heroicons/react/24/solid";
    import Board from "./components/Board.jsx";
    ```
 2. Замените `labelList` и `cards` на следующий код (добавляем `initialColumns`):
@@ -280,7 +278,7 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
        { id: 'first', title: 'Новые' }
    ];
 
-   const cards = [
+   const initCards = [
        {
            cardId: crypto.randomUUID(),
            column: 'first',
@@ -297,7 +295,7 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
        boardProps={{ columns: initialColumns }}
        columnProps={{}}
        cardProps={{ labelList }}
-       cards={cards}
+       cards={initCards}
    />
    ```
 
@@ -315,7 +313,12 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
 3. Отредактируйте `Board.jsx`, чтобы поддерживать создание колонок.
 
 **Изменения в App.jsx**:
-1. Замените `labelList`, `initialColumns` и `cards` на следующий код (добавляем состояния):
+1. В начале файла, добавьте импорт `useState` :
+   ```jsx
+   import { useState } from "react";
+   ```
+
+2. Замените `labelList`, `initialColumns` и `cards` на следующий код (добавляем состояния):
    ```jsx
    const labelList = {
        urgent: {title: 'Срочная', color: 'bg-[#FFA3A6]'},
@@ -377,7 +380,7 @@ export default function Board({ boardProps, columnProps, cardProps, cards }) {
        setIsAddingCard(false);
    }
    ```
-2. Внутри `<Board>`, замените `boardProps` и `columnProps` на:
+3. Внутри `<Board>`, замените `boardProps` и `columnProps` на:
    ```jsx
    boardProps={{
        columns,
@@ -486,7 +489,7 @@ export default function Filter({ labels, sortLabel, setSortLabel }) {
    ```jsx
    import Filter from "./components/Filter.jsx";
    ```
-2. Перед `return`, после состояния `newCardTitle`, добавьте:
+2. В `return`, после состояния `newCardTitle`, добавьте:
    ```jsx
    const [sortLabel, setSortLabel] = useState("");
    ```
@@ -583,7 +586,7 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
                         ))}
                     </select>
                 </div>
-                <SectionHeader icon={Bars3BottomLeftIcon} text="Срок исполнения" />
+                <SectionHeader icon={Bars3BottomLeftIcon} text="Описание" />
                 <textarea
                     value={description}
                     placeholder="Описание карточки..."
@@ -602,7 +605,7 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
                     }}
                     className="ml-10 text-black text-lg font-semibold scheme-light w-fit rounded-xl bg-amber-50 px-5 py-1 drop-shadow-sm focus:outline-none"
                 />
-                <SectionHeader icon={WrenchIcon} text="Срок исполнения" />
+                <SectionHeader icon={WrenchIcon} text="Действия" />
                 <div className="flex flex-row gap-10 ml-10">
                     <Button
                         className="w-[160px]"
@@ -675,9 +678,16 @@ export default function DialogModal({ card, onClose, onSave, onDelete, labelList
    ```
 
 **Изменения в Card.jsx**:
-1. После `return`, после `<div className="..."`, добавьте:
+1. В `return`, отредактируйте первый `<div>` - `<div className="card..."`. Должно получится вот так:
    ```jsx
-   onClick={() => props.onCardClick(props.cardId)}
+   ...
+   return (
+   
+   <div className="card bg-[#E1EFFB] hover:bg-[#E6F8FF] hover:scale-105"
+             ~onClick={() => props.onCardClick(props.cardId)}>
+      
+       <div>
+      ...
    ```
 
 
